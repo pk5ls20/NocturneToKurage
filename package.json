@@ -5,7 +5,8 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "npm run build && vite preview",
-    "lint": "eslint . --fix --ignore-path .gitignore"
+    "lint": "eslint . --fix --ignore-path .gitignore",
+    "test": "vitest --ui --api 11451"
   },
   "dependencies": {
     "@mdi/font": "7.4.47",
@@ -16,10 +17,12 @@
   },
   "devDependencies": {
     "@babel/types": "^7.24.7",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.16.3",
     "@vitejs/plugin-vue": "^5.0.5",
+    "@vitest/ui": "^2.0.5",
     "@vue/devtools": "^6.6.3",
     "@vue/eslint-config-typescript": "^13.0.0",
+    "buffer": "^6.0.3",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
@@ -35,6 +38,7 @@
     "vite": "^5.3.3",
     "vite-plugin-vue-devtools": "^7.3.9",
     "vite-plugin-vuetify": "^2.0.3",
+    "vitest": "^2.0.5",
     "vue-router": "^4.4.0",
     "vue-tsc": "^2.0.26"
   },
