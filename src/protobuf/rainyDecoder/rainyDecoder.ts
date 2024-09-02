@@ -34,13 +34,6 @@ type SimpleDecodeResultT = ProtoTree<number, (string | Buffer | ComplexDecodeRes
 
 // https://protobuf.dev/programming-guides/encoding/#cheat-sheet
 export class rainyDecoder<SM extends boolean = true> extends protobufDecoder<SM, number, string, ComplexDecodeResult> {
-  simpleMode: SM;
-
-  constructor(simpleMode: SM) {
-    super();
-    this.simpleMode = simpleMode;
-  }
-
   private decodeProto(buffer: Buffer): ComplexDecodeResult {
     const reader = new BufferReader(buffer);
     const parts: ProtoField[] = [];
