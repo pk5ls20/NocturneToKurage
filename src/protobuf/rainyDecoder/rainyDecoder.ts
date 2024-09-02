@@ -1,8 +1,10 @@
 // ref: https://github.com/pawitp/protobuf-decoder
 import {Buffer} from 'buffer'
 import BufferReader from "./bufferReader";
+import {bufferToPrettyHex} from "@/protobuf/utils";
+import {DecodeResult, protobufDecoder, ProtoTree} from "@/protobuf/decoder";
 
-export enum DataType {
+enum DataType {
   // standard protobuf wire types https://protobuf.dev/programming-guides/encoding/#structure
   VARINT = 0,
   FIXED64 = 1,
@@ -14,87 +16,123 @@ export enum DataType {
   STRING_OR_BYTES = 102,
 }
 
+type ProtoValue<T> = string | Buffer | T[];
+
 interface ProtoField {
   byteRange: [number, number];
   index: number;
   type: DataType;
-  value: string | Buffer | ProtoField[];
+  value: ProtoValue<ProtoField>;
 }
 
-interface DecodeResult {
+interface ComplexDecodeResult {
   fields: ProtoField[];
   leftOver: Buffer;
 }
 
+type SimpleDecodeResultT = ProtoTree<number, (string | Buffer | ComplexDecodeResult)>
+
 // https://protobuf.dev/programming-guides/encoding/#cheat-sheet
-export function decodeProto(buffer: Buffer): DecodeResult {
-  const reader = new BufferReader(buffer);
-  const parts: ProtoField[] = [];
-  reader.trySkipGrpcHeader();
-  try {
-    while (reader.leftBytes() > 0) {
-      reader.checkpoint();
-      const byteRange: [number, number] = [reader.offset, null];
-      const indexType = parseInt(reader.readVarInt().toString());
-      const type = indexType & 0b111; // wire_type
-      const index = indexType >> 3;  // field_number
-      let value: string | Buffer;
-      if (type === DataType.VARINT) {
-        value = reader.readVarInt().toString();
-      } else if (type === DataType.LENDELIM) {
-        const length = parseInt(reader.readVarInt().toString());
-        value = reader.readBuffer(length);
-      } else if (type === DataType.FIXED32) {
-        value = reader.readBuffer(4);
-      } else if (type === DataType.FIXED64) {
-        value = reader.readBuffer(8);
-      } else {
-        console.error("Unknown type: " + type);
-        reader.resetToCheckpoint();
-        break;
-      }
-      byteRange[1] = reader.offset;
-      parts.push({
-        byteRange,
-        index,
-        type,
-        value
-      });
-    }
-  } catch (err) {
-    console.error(err);
-    reader.resetToCheckpoint();
-  }
-  return {
-    fields: parts,
-    leftOver: reader.readBuffer(reader.leftBytes())
-  }
-}
+export class rainyDecoder<SM extends boolean = true> extends protobufDecoder<SM, number, string, ComplexDecodeResult> {
+  simpleMode: SM;
 
-export function recursiveDecodeProto(buffer: Buffer): DecodeResult {
-  const result = decodeProto(buffer);
-  for (const part of result.fields) {
-    if (part.type === DataType.LENDELIM) {
-      const decoded = decodeProto(part.value as Buffer);
-      if (part.value instanceof Buffer && part.value.length > 0 && decoded.leftOver.length === 0) {
-        part.value = recursiveDecodeProto(part.value as Buffer).fields;
-      } else {
-        [part.type, part.value] = decodeStringOrBytes(part.value as Buffer);
+  constructor(simpleMode: SM) {
+    super();
+    this.simpleMode = simpleMode;
+  }
+
+  private decodeProto(buffer: Buffer): ComplexDecodeResult {
+    const reader = new BufferReader(buffer);
+    const parts: ProtoField[] = [];
+    reader.trySkipGrpcHeader();
+    try {
+      while (reader.leftBytes() > 0) {
+        reader.checkpoint();
+        const originalOffset = reader.offset;
+        const indexType = parseInt(reader.readVarInt().toString());
+        const type = indexType & 0b111; // wire_type
+        const index = indexType >> 3;  // field_number
+        let value: string | Buffer;
+        if (type === DataType.VARINT) {
+          value = reader.readVarInt().toString();
+        } else if (type === DataType.LENDELIM) {
+          const length = parseInt(reader.readVarInt().toString());
+          value = reader.readBuffer(length);
+        } else if (type === DataType.FIXED32) {
+          value = reader.readBuffer(4);
+        } else if (type === DataType.FIXED64) {
+          value = reader.readBuffer(8);
+        } else {
+          console.error("Unknown type: " + type);
+          reader.resetToCheckpoint();
+          break;
+        }
+        parts.push({
+          byteRange: [originalOffset, reader.offset] as [number, number],
+          index,
+          type,
+          value
+        });
       }
+    } catch (err) {
+      console.error(err);
+      reader.resetToCheckpoint();
+    }
+    return {
+      fields: parts,
+      leftOver: reader.readBuffer(reader.leftBytes())
     }
   }
-  return result;
-}
 
-export function decodeStringOrBytes(value: Buffer): [DataType, string] {
-  if (!value.length) {
-    return [DataType.STRING_OR_BYTES, ""];
+  private simpleResHelper(res: SimpleDecodeResultT, k: number, v: (string | Buffer | ComplexDecodeResult)) {
+    res[k] = Array.isArray(res[k])
+      ? (res[k] as (string | Buffer | ComplexDecodeResult)[]).concat(v)
+      : res[k]
+        ? [res[k], v]
+        : v;
   }
-  const td = new TextDecoder("utf-8", {fatal: true});
-  try {
-    return [DataType.STRING, td.decode(value)];
-  } catch (e) {
-    return [DataType.BYTES, bufferToPrettyHex(value)];
+
+  private bakeProto(buffer: Buffer): DecodeResult<SM, number, string, ComplexDecodeResult> {
+    const result = this.decodeProto(buffer);
+    const simpleResult: SimpleDecodeResultT = {};
+    for (const part of result.fields) {
+      if (part.type === DataType.LENDELIM) {
+        const decoded = this.decodeProto(part.value as Buffer);
+        if (part.value instanceof Buffer && part.value.length > 0 && decoded.leftOver.length === 0) {
+          if (this.simpleMode) {
+            this.simpleResHelper(simpleResult, part.index, this.bakeProto(part.value as Buffer) as ComplexDecodeResult);
+          } else {
+            part.value = (this.bakeProto(part.value as Buffer) as ComplexDecodeResult).fields;
+          }
+        } else {
+          if (this.simpleMode) {
+            const [, value] = this.decodeStringOrBytes(part.value as Buffer);
+            this.simpleResHelper(simpleResult, part.index, value);
+          } else {
+            [part.type, part.value] = this.decodeStringOrBytes(part.value as Buffer);
+          }
+        }
+      } else if (this.simpleMode) {
+        this.simpleResHelper(simpleResult, part.index, part.value as string);
+      }
+    }
+    return (this.simpleMode ? simpleResult : result) as DecodeResult<SM, number, string, ComplexDecodeResult>;
+  }
+
+  decode(buffer: Buffer): DecodeResult<SM, number, string, ComplexDecodeResult> {
+    return this.bakeProto(buffer);
+  }
+
+  private decodeStringOrBytes(value: Buffer): [DataType, string] {
+    if (!value.length) {
+      return [DataType.STRING_OR_BYTES, ""];
+    }
+    const td = new TextDecoder("utf-8", {fatal: true});
+    try {
+      return [DataType.STRING, td.decode(value)];
+    } catch (e) {
+      return [DataType.BYTES, bufferToPrettyHex(value)];
+    }
   }
 }
 
@@ -118,11 +156,3 @@ export const typeToString = (type: DataType, subType: DataType) => {
       return "unknown";
   }
 }
-
-export const parseHexStrToBuffer = (input: string) => {
-  const normalizedInput = input.replace(/\s/g, "");
-  const normalizedHexInput = normalizedInput.replace(/0x/g, "").toLowerCase();
-  return Buffer.from(normalizedHexInput, "hex");
-}
-
-export const bufferToPrettyHex = (b: Buffer) => [...b].map(c => c.toString(16).padStart(2, '0')).join(' ');
