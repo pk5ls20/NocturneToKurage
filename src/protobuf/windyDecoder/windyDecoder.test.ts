@@ -3,7 +3,7 @@ import {windyDecoder} from "@/protobuf/windyDecoder/windyDecoder";
 import {parseHexStrToBuffer} from "@/protobuf/utils";
 
 // from https://github.com/LagrangeDev/LagrangeGo
-const ApplyUploadRespV3Proto = `
+export const ApplyUploadRespV3Proto = `
 syntax = "proto3";
 
 message ApplyUploadRespV3 {
@@ -30,7 +30,7 @@ message ApplyUploadRespV3 {
 `
 
 // from https://github.com/LagrangeDev/LagrangeGo
-const NTV2RichMediaReqProto = `
+export const NTV2RichMediaReqProto = `
 syntax = "proto3";
 
 option go_package = "github.com/LagrangeDev/LagrangeGo/client/packets/pb/service/oidb";

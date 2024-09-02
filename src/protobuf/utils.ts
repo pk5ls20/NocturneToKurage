@@ -6,4 +6,4 @@ export const parseHexStrToBuffer = (input: string) => {
   return Buffer.from(normalizedHexInput, "hex");
 }
 
-export const bufferToPrettyHex = (b: Buffer) => [...b].map(c => c.toString(16).padStart(2, '0')).join(' ');
+export const bufferToPrettyHex = (b: Buffer) => [...b].map(c => c.toString(16).padStart(2, '0')).join('');
