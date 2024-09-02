@@ -1,8 +1,8 @@
 // ref: https://github.com/pawitp/protobuf-decoder
-import {Buffer} from 'buffer'
-import BufferReader from "./bufferReader";
-import {bufferToPrettyHex} from "@/protobuf/utils";
-import {DecodeResult, protobufDecoder, ProtoTree} from "@/protobuf/decoder";
+import { Buffer } from 'buffer';
+import BufferReader from './bufferReader';
+import { bufferToPrettyHex } from '@/protobuf/utils';
+import { DecodeResult, protobufDecoder, ProtoTree } from '@/protobuf/decoder';
 
 enum DataType {
   // standard protobuf wire types https://protobuf.dev/programming-guides/encoding/#structure
@@ -30,7 +30,7 @@ interface ComplexDecodeResult {
   leftOver: Buffer;
 }
 
-type SimpleDecodeResultT = ProtoTree<number, (string | Buffer | ComplexDecodeResult)>
+type SimpleDecodeResultT = ProtoTree<number, string | Buffer | ComplexDecodeResult>;
 
 // https://protobuf.dev/programming-guides/encoding/#cheat-sheet
 export class rainyDecoder<SM extends boolean = true> extends protobufDecoder<SM, number, string, ComplexDecodeResult> {
@@ -44,7 +44,7 @@ export class rainyDecoder<SM extends boolean = true> extends protobufDecoder<SM,
         const originalOffset = reader.offset;
         const indexType = parseInt(reader.readVarInt().toString());
         const type = indexType & 0b111; // wire_type
-        const index = indexType >> 3;  // field_number
+        const index = indexType >> 3; // field_number
         let value: string | Buffer;
         if (type === DataType.VARINT) {
           value = reader.readVarInt().toString();
@@ -56,7 +56,7 @@ export class rainyDecoder<SM extends boolean = true> extends protobufDecoder<SM,
         } else if (type === DataType.FIXED64) {
           value = reader.readBuffer(8);
         } else {
-          console.error("Unknown type: " + type);
+          console.error('Unknown type: ' + type);
           reader.resetToCheckpoint();
           break;
         }
@@ -64,7 +64,7 @@ export class rainyDecoder<SM extends boolean = true> extends protobufDecoder<SM,
           byteRange: [originalOffset, reader.offset] as [number, number],
           index,
           type,
-          value
+          value,
         });
       }
     } catch (err) {
@@ -73,11 +73,11 @@ export class rainyDecoder<SM extends boolean = true> extends protobufDecoder<SM,
     }
     return {
       fields: parts,
-      leftOver: reader.readBuffer(reader.leftBytes())
-    }
+      leftOver: reader.readBuffer(reader.leftBytes()),
+    };
   }
 
-  private simpleResHelper(res: SimpleDecodeResultT, k: number, v: (string | Buffer | ComplexDecodeResult)) {
+  private simpleResHelper(res: SimpleDecodeResultT, k: number, v: string | Buffer | ComplexDecodeResult) {
     res[k] = Array.isArray(res[k])
       ? (res[k] as (string | Buffer | ComplexDecodeResult)[]).concat(v)
       : res[k]
@@ -118,9 +118,9 @@ export class rainyDecoder<SM extends boolean = true> extends protobufDecoder<SM,
 
   private decodeStringOrBytes(value: Buffer): [DataType, string] {
     if (!value.length) {
-      return [DataType.STRING_OR_BYTES, ""];
+      return [DataType.STRING_OR_BYTES, ''];
     }
-    const td = new TextDecoder("utf-8", {fatal: true});
+    const td = new TextDecoder('utf-8', { fatal: true });
     try {
       return [DataType.STRING, td.decode(value)];
     } catch (e) {
@@ -132,20 +132,20 @@ export class rainyDecoder<SM extends boolean = true> extends protobufDecoder<SM,
 export const typeToString = (type: DataType, subType: DataType) => {
   switch (type) {
     case DataType.VARINT:
-      return "varint";
+      return 'varint';
     case DataType.LENDELIM:
-      return subType || "len_delim";
+      return subType || 'len_delim';
     case DataType.FIXED32:
-      return "fixed32";
+      return 'fixed32';
     case DataType.FIXED64:
-      return "fixed64";
+      return 'fixed64';
     case DataType.STRING:
-      return "string";
+      return 'string';
     case DataType.BYTES:
-      return "bytes";
+      return 'bytes';
     case DataType.STRING_OR_BYTES:
-      return "string|bytes";
+      return 'string|bytes';
     default:
-      return "unknown";
+      return 'unknown';
   }
-}
+};

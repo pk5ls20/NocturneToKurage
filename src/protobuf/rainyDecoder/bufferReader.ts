@@ -1,5 +1,5 @@
 // ref: https://github.com/pawitp/protobuf-decoder
-import {Buffer} from "buffer";
+import { Buffer } from 'buffer';
 
 export default class BufferReader {
   private readonly buffer: Buffer;
@@ -18,7 +18,7 @@ export default class BufferReader {
     let byte = 0;
     do {
       if (offset >= buffer.length) {
-        throw new RangeError("Index out of bound decoding varint");
+        throw new RangeError('Index out of bound decoding varint');
       }
       byte = buffer[offset++];
       const multiplier = BigInt(2) ** BigInt(shift);
@@ -28,7 +28,7 @@ export default class BufferReader {
     } while (byte >= 0x80);
     return {
       value: res,
-      length: shift / 7
+      length: shift / 7,
     };
   }
 

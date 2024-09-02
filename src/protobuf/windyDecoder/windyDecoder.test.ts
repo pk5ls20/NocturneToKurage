@@ -1,6 +1,6 @@
-import {expect, test} from "vitest";
-import {windyDecoder} from "@/protobuf/windyDecoder/windyDecoder";
-import {parseHexStrToBuffer} from "@/protobuf/utils";
+import { expect, test } from 'vitest';
+import { windyDecoder } from '@/protobuf/windyDecoder/windyDecoder';
+import { parseHexStrToBuffer } from '@/protobuf/utils';
 
 // from https://github.com/LagrangeDev/LagrangeGo
 export const ApplyUploadRespV3Proto = `
@@ -27,7 +27,7 @@ message ApplyUploadRespV3 {
   string FileAddon = 200;
   bytes MediaPlatformUploadKey = 220;
 }
-`
+`;
 
 // from https://github.com/LagrangeDev/LagrangeGo
 export const NTV2RichMediaReqProto = `
@@ -254,24 +254,87 @@ message UploadReq {
   uint32 ClientSeq = 7;
   bool NoNeedCompatMsg = 8;
 }
-`
+`;
 
 test('windyDecodeProto1', () => {
-  const pMap = new Map<string, string>().set('test1.proto', ApplyUploadRespV3Proto)
+  const pMap = new Map<string, string>().set('test1.proto', ApplyUploadRespV3Proto);
   const decoded = new windyDecoder(true, pMap).decode(
-    parseHexStrToBuffer('50d2fe06a2010a73696d706c6554657374f001e1e30bc002eaf3069003cb66e2030f3131342e3131342e3131342e313134b2040a676f6f676c652e636f6d800516d2052436376239393665372d343761392d346633322d383465352d373763326333336665616233a2060152f00600c00700920807312e312e312e31920807322e322e322e32e00800b2090a6769746875622e636f6d820a0a6769746875622e636f6dd20a07382e382e382e38c20c18e58e9fe69da5e4bda0e4b99fe78ea9e58e9fe7a59eefbc9fe20d00'),
+    parseHexStrToBuffer(
+      '50d2fe06a2010a73696d706c6554657374f001e1e30bc002eaf3069003cb66e2030f3131342e3131342e3131342e313134b2040a676f6f676c652e636f6d800516d2052436376239393665372d343761392d346633322d383465352d373763326333336665616233a2060152f00600c00700920807312e312e312e31920807322e322e322e32e00800b2090a6769746875622e636f6d820a0a6769746875622e636f6dd20a07382e382e382e38c20c18e58e9fe69da5e4bda0e4b99fe78ea9e58e9fe7a59eefbc9fe20d00'
+    ),
     'test1.proto',
-    'ApplyUploadRespV3')
-  console.log("decodeProto1", JSON.stringify(decoded))
-  expect(decoded).toEqual({"RetCode":114514,"RetMsg":"simpleTest","TotalSpace":"192993","UsedSpace":"113130","UploadedSize":"13131","UploadIp":"114.114.114.114","UploadDomain":"google.com","UploadPort":22,"Uuid":"67b996e7-47a9-4f32-84e5-77c2c33feab3","UploadKey":"Ug==","BoolFileExist":false,"PackSize":0,"UploadIpList":["1.1.1.1","2.2.2.2"],"UploadHttpsPort":0,"UploadHttpsDomain":"github.com","UploadDns":"github.com","UploadLanip":"8.8.8.8","FileAddon":"原来你也玩原神？","MediaPlatformUploadKey":""})
-})
+    'ApplyUploadRespV3'
+  );
+  console.log('decodeProto1', JSON.stringify(decoded));
+  expect(decoded).toEqual({
+    RetCode: 114514,
+    RetMsg: 'simpleTest',
+    TotalSpace: '192993',
+    UsedSpace: '113130',
+    UploadedSize: '13131',
+    UploadIp: '114.114.114.114',
+    UploadDomain: 'google.com',
+    UploadPort: 22,
+    Uuid: '67b996e7-47a9-4f32-84e5-77c2c33feab3',
+    UploadKey: 'Ug==',
+    BoolFileExist: false,
+    PackSize: 0,
+    UploadIpList: ['1.1.1.1', '2.2.2.2'],
+    UploadHttpsPort: 0,
+    UploadHttpsDomain: 'github.com',
+    UploadDns: 'github.com',
+    UploadLanip: '8.8.8.8',
+    FileAddon: '原来你也玩原神？',
+    MediaPlatformUploadKey: '',
+  });
+});
 
 test('windyDecodeProto2', () => {
-  const pMap = new Map<string, string>().set('test2.proto', NTV2RichMediaReqProto)
+  const pMap = new Map<string, string>().set('test2.proto', NTV2RichMediaReqProto);
   const decoded = new windyDecoder(true, pMap).decode(
-    parseHexStrToBuffer('0a2b0a04087b100a121fa80601b00602c00c03ca0c0d08011209e593a6e593a6e593a6d20c0308d7081a02080112530a3d0a39088008120fe78ea9e58e9fe7a59ee78ea9e79a841a0473686131220966696c65412e6a70672a08080110011800200030800f38b8084064480110011001180020b1d1f9d60328013202500a38644000'),
+    parseHexStrToBuffer(
+      '0a2b0a04087b100a121fa80601b00602c00c03ca0c0d08011209e593a6e593a6e593a6d20c0308d7081a02080112530a3d0a39088008120fe78ea9e58e9fe7a59ee78ea9e79a841a0473686131220966696c65412e6a70672a08080110011800200030800f38b8084064480110011001180020b1d1f9d60328013202500a38644000'
+    ),
     'test2.proto',
-    'NTV2RichMediaReq')
-  console.log("decodeProto2", JSON.stringify(decoded))
-  expect(decoded).toEqual({"ReqHead":{"Common":{"RequestId":123,"Command":10},"Scene":{"RequestType":1,"BusinessType":2,"SceneType":3,"C2C":{"AccountType":1,"TargetUid":"哦哦哦"},"Group":{"GroupUin":1111}},"Client":{"AgentType":1}},"Upload":{"UploadInfo":[{"FileInfo":{"FileSize":1024,"FileHash":"玩原神玩的","FileSha1":"sha1","FileName":"fileA.jpg","Type":{"Type":1,"PicFormat":1,"VideoFormat":0,"VoiceFormat":0},"Width":1920,"Height":1080,"Time":100,"Original":1},"SubFileType":1}],"TryFastUploadCompleted":true,"SrvSendMsg":false,"ClientRandomId":"987654321","CompatQMsgSceneType":1,"ExtBizInfo":{"BusiType":10},"ClientSeq":100,"NoNeedCompatMsg":false}})
-})
+    'NTV2RichMediaReq'
+  );
+  console.log('decodeProto2', JSON.stringify(decoded));
+  expect(decoded).toEqual({
+    ReqHead: {
+      Common: { RequestId: 123, Command: 10 },
+      Scene: {
+        RequestType: 1,
+        BusinessType: 2,
+        SceneType: 3,
+        C2C: { AccountType: 1, TargetUid: '哦哦哦' },
+        Group: { GroupUin: 1111 },
+      },
+      Client: { AgentType: 1 },
+    },
+    Upload: {
+      UploadInfo: [
+        {
+          FileInfo: {
+            FileSize: 1024,
+            FileHash: '玩原神玩的',
+            FileSha1: 'sha1',
+            FileName: 'fileA.jpg',
+            Type: { Type: 1, PicFormat: 1, VideoFormat: 0, VoiceFormat: 0 },
+            Width: 1920,
+            Height: 1080,
+            Time: 100,
+            Original: 1,
+          },
+          SubFileType: 1,
+        },
+      ],
+      TryFastUploadCompleted: true,
+      SrvSendMsg: false,
+      ClientRandomId: '987654321',
+      CompatQMsgSceneType: 1,
+      ExtBizInfo: { BusiType: 10 },
+      ClientSeq: 100,
+      NoNeedCompatMsg: false,
+    },
+  });
+});

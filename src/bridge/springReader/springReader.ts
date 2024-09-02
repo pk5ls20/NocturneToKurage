@@ -1,4 +1,4 @@
-type LENGTH_PREFIX = "u8" | "u16" | "u32" | "u64";
+type LENGTH_PREFIX = 'u8' | 'u16' | 'u32' | 'u64';
 
 export class SpringReader {
   private buffer: DataView;
@@ -10,7 +10,7 @@ export class SpringReader {
     } else if (buffer instanceof DataView || buffer instanceof Uint8Array) {
       this.buffer = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
     } else {
-      throw new Error("Invalid buffer type");
+      throw new Error('Invalid buffer type');
     }
   }
 
@@ -87,25 +87,25 @@ export class SpringReader {
 
   readString(length: number): string {
     const bytes = this.readBytes(length);
-    return new TextDecoder("utf-8").decode(bytes);
+    return new TextDecoder('utf-8').decode(bytes);
   }
 
   readBytesWithLength(prefix: LENGTH_PREFIX, withPrefix: boolean = true): Uint8Array {
     let length: number;
     switch (prefix) {
-      case "u8": {
+      case 'u8': {
         length = this.readU8() - (withPrefix ? 1 : 0);
         break;
       }
-      case "u16": {
+      case 'u16': {
         length = this.readU16() - (withPrefix ? 2 : 0);
         break;
       }
-      case "u32": {
+      case 'u32': {
         length = this.readU32() - (withPrefix ? 4 : 0);
         break;
       }
-      case "u64": {
+      case 'u64': {
         length = Number(this.readU64()) - (withPrefix ? 8 : 0);
         break;
       }
@@ -115,7 +115,7 @@ export class SpringReader {
 
   readStringWithLength(prefix: LENGTH_PREFIX, withPrefix: boolean = true): string {
     const bytes = this.readBytesWithLength(prefix, withPrefix);
-    return new TextDecoder("utf-8").decode(bytes);
+    return new TextDecoder('utf-8').decode(bytes);
   }
 
   readTLV(): Record<number, Uint8Array> {

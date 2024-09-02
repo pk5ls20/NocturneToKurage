@@ -1,7 +1,7 @@
-import {DecodeResult, protobufDecoder} from "@/protobuf/decoder";
+import { DecodeResult, protobufDecoder } from '@/protobuf/decoder';
 import * as protobuf from 'protobufjs';
 
-type protoFileMap = Map<string, string>
+type protoFileMap = Map<string, string>;
 
 export class windyDecoder<SM extends boolean = true> extends protobufDecoder<SM, string, string, protobuf.Message<{}>> {
   private protoFileMap: protoFileMap;
@@ -25,8 +25,12 @@ export class windyDecoder<SM extends boolean = true> extends protobufDecoder<SM,
     return typ.decode(buffer);
   }
 
-  override decode(buffer: Buffer, protoFile: string, protoType: string): DecodeResult<SM, string, string, protobuf.Message<{}>> {
-    const res = this._decode(buffer, protoFile, protoType)
+  override decode(
+    buffer: Buffer,
+    protoFile: string,
+    protoType: string
+  ): DecodeResult<SM, string, string, protobuf.Message<{}>> {
+    const res = this._decode(buffer, protoFile, protoType);
     return (this.simpleMode ? res.toJSON() : res) as DecodeResult<SM, number, string, protobuf.Message<{}>>;
   }
 }
