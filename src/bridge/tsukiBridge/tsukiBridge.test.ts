@@ -60,8 +60,8 @@ test('tsukiBridge2', () => {
   );
   const rd = new windyDecoder(true);
   rd.addProtoFile('test1.proto', NTV2RichMediaReqProto);
-  const bridge = new tsukiBridge<[string, string]>();
-  const [tree, ed] = bridge.bake([data, ['test1.proto', 'NTV2RichMediaReq']], rd);
+  const bridge = new tsukiBridge();
+  const [tree, ed] = bridge.bake<[string, string]>([data, ['test1.proto', 'NTV2RichMediaReq']], rd);
   expect(tree).deep.eq({
     ReqHead: {
       Common: { RequestId: 123, Command: 10 },

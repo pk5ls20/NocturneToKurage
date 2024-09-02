@@ -14,7 +14,7 @@ interface extendDataType {
   compress_type: number;
 }
 
-export class tsukiBridge<EPAT = null> extends dataBridge<number | string, string, extendDataType, EPAT> {
+export class tsukiBridge extends dataBridge<number | string, string, extendDataType> {
   constructor() {
     super();
   }
@@ -42,7 +42,7 @@ export class tsukiBridge<EPAT = null> extends dataBridge<number | string, string
     ];
   }
 
-  bake(
+  bake<EPAT = null>(
     data: [Buffer, EPAT?],
     decoder: protobufDecoder<true, number | string, string, never>
   ): [ProtoTree<number | string, string>, extendDataType] {
