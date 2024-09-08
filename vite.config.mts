@@ -1,8 +1,7 @@
-import Components from 'unplugin-vue-components/vite';
 import Vue from '@vitejs/plugin-vue';
+import vueJsx from '@vitejs/plugin-vue-jsx';
 import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
 import ViteFonts from 'unplugin-fonts/vite';
-import VueRouter from 'unplugin-vue-router/vite';
 import { defineConfig } from 'vite';
 import { fileURLToPath, URL } from 'node:url';
 import vueDevTools from 'vite-plugin-vue-devtools';
@@ -10,10 +9,10 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    VueRouter(),
     Vue({
       template: { transformAssetUrls },
     }),
+    vueJsx({}),
     // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
     Vuetify({
       autoImport: true,
@@ -21,7 +20,6 @@ export default defineConfig({
         configFile: 'src/styles/settings.scss',
       },
     }),
-    Components(),
     ViteFonts({
       google: {
         families: [
@@ -43,5 +41,18 @@ export default defineConfig({
   },
   server: {
     port: 19198,
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    server: {
+      deps: {
+        inline: ['vuetify'],
+      },
+    },
+    coverage: {
+      reporter: ['text', 'json-summary', 'json'],
+      reportOnFailure: true,
+    },
   },
 });
