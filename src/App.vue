@@ -3,7 +3,7 @@
     <v-main>
       <v-app-bar :elevation="2" prominent>
         <v-app-bar-nav-icon icon="md:menu" variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-        <v-toolbar-title>NocturneToKurage</v-toolbar-title>
+        <v-toolbar-title @click="NocturneToKurage" style="cursor: pointer">NocturneToKurage</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn icon="md:search" variant="text"></v-btn>
         <v-btn icon="md:settings" variant="text" @click="store.isSettingDialogShow = true"></v-btn>
@@ -32,6 +32,9 @@ import { useRouter } from 'vue-router';
 import { useMainPageStore } from '@/states/mainPageState';
 import SettingDialog from '@/components/flow/settingDialog.vue';
 
+const NocturneToKurage = () => {
+  window.location.href = 'https://music.163.com/song?id=31421450';
+};
 const router = useRouter();
 const store = useMainPageStore();
 const drawer = ref(false);
