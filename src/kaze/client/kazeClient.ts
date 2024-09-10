@@ -1,5 +1,5 @@
-import { Ref, ref } from 'vue';
-import { configBase, MultiSelectConfig, TextInputConfig } from '@/kaze/config/config';
+import { DefineComponent, Ref, ref } from 'vue';
+import { MultiSelectComponent, TextInputComponent } from '@/components/dynamic/basicComponents';
 import { bridgeContainer } from '@/kaze/bridge';
 import { decoderContainer } from '@/kaze/decoder';
 import { dataBridge } from '@/kaze/bridge/bridge';
@@ -8,12 +8,25 @@ import { tsukiBridge } from '@/kaze/bridge/tsukiBridge/tsukiBridge';
 import { rainyDecoder } from '@/kaze/decoder/rainyDecoder/rainyDecoder';
 import { windyDecoder } from '@/kaze/decoder/windyDecoder/windyDecoder';
 import { protobufDecoder } from '@/kaze/decoder/decoder';
+import {
+  dyComponent,
+  dyComponentsTreeBase,
+  rendererComponents,
+  rendererHelper,
+  rendererType,
+} from '@/components/dynamic/dyComponent';
 
-export class kazeClient extends configBase {
+@rendererComponents(['config'])
+export class kazeClient extends dyComponentsTreeBase implements rendererType<['config']> {
   readonly clientName: Ref<string>;
   readonly bridge: bridgeContainer;
   readonly decoder: decoderContainer;
   readonly clientAddress: Ref<string>;
+
+  configComponents!: dyComponent<unknown, unknown, boolean, unknown>[];
+  configRender!: (depth?: number, isRender?: Ref<boolean>) => DefineComponent[];
+  _rd_config!: rendererHelper;
+  isconfigRendered!: Ref<boolean>;
 
   constructor() {
     super();
@@ -30,11 +43,25 @@ export class kazeClient extends configBase {
       ])
     );
     this.clientAddress = ref('');
-    this.configs = [
-      new TextInputConfig('', this.clientName, 'Client Name'),
-      new TextInputConfig('', this.clientAddress, 'Websocket address'),
-      new MultiSelectConfig(this.bridge.keys(), [ref(true)], 'Bridge', this.bridge.values(), true),
-      new MultiSelectConfig(this.decoder.keys(), [ref(true), ref(true)], 'Decoder', this.decoder.values(), false),
+    this._rd_config = this._rd_config || this.constructor.prototype._rd_config;
+    this.configRender = this.configRender || this.constructor.prototype.configRender;
+    this.isconfigRendered = this.isconfigRendered || this.constructor.prototype.isconfigRendered;
+    this.configComponents = [
+      new TextInputComponent('', this.clientName, this._rd_config, 'Client Name'),
+      new TextInputComponent('', this.clientAddress, this._rd_config, 'Websocket address'),
+      new MultiSelectComponent(this.bridge.keys(), [ref(true)], this._rd_config, 'Bridge', this.bridge.values(), {
+        disable: true,
+      }),
+      new MultiSelectComponent(
+        this.decoder.keys(),
+        [ref(true), ref(true)],
+        this._rd_config,
+        'Decoder',
+        this.decoder.values(),
+        {
+          disable: false,
+        }
+      ),
     ];
   }
 }

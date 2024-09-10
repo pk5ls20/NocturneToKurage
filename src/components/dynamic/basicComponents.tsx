@@ -1,41 +1,23 @@
 import { DefineComponent, defineComponent, ref, Ref } from 'vue';
 import { VCheckbox, VChip, VCol, VFileInput, VRow, VTextField } from 'vuetify/components';
+import { dyComponent, dyComponentsTreeBase, rendererHelper } from '@/components/dynamic/dyComponent';
 
 const InitialFS = 18;
 
-abstract class BC<LT extends unknown, VT extends unknown, CT extends boolean> {
-  label: LT; // component label
-  value: Ref<VT> | Ref<VT>[]; // v-model binding
-  title?: string; // title
-  controlObject?: CT extends true ? configBase | configBase[] | undefined : never; // component's child
-  disabled: boolean = false; // disabled
-
-  protected constructor(
-    label: LT,
-    value: Ref<VT> | Ref<VT>[],
-    title?: string,
-    controlObject?: CT extends true ? configBase | configBase[] | undefined : never,
-    disabled?: boolean
-  ) {
-    this.label = label;
-    this.value = value;
-    this.title = title;
-    this.controlObject = controlObject ?? undefined;
-    this.disabled = disabled ?? false;
-  }
-
-  abstract render(depth: number, isRender: Ref<boolean>): DefineComponent;
+export interface MultiSelectExtOpt {
+  disable?: boolean;
 }
 
-export class MultiSelectConfig extends BC<string[], boolean, true> {
+export class MultiSelectComponent extends dyComponent<string[], boolean, true, MultiSelectExtOpt> {
   constructor(
     label: string[],
     value: Ref<boolean>[],
+    renderExtInfo: rendererHelper,
     title?: string,
-    controlObject?: configBase | configBase[],
-    disable?: boolean
+    controlComponent?: dyComponentsTreeBase | dyComponentsTreeBase[],
+    extraOptions?: MultiSelectExtOpt
   ) {
-    super(label, value, title, controlObject, disable);
+    super(label, value, renderExtInfo, title, controlComponent, extraOptions);
   }
 
   render(depth: number, isRender: Ref<boolean>): DefineComponent {
@@ -43,12 +25,13 @@ export class MultiSelectConfig extends BC<string[], boolean, true> {
     const title = this.title;
     const label = this.label;
     const value = this.value as Ref<boolean>[];
-    const disable = this.disabled;
-    const controlObject = this.controlObject as configBase[];
+    const controlComponent = this.controlComponent as dyComponentsTreeBase[];
+    const disable = this.extraOptions?.disable;
 
     const updateIsRendered = (index: number, newValue: boolean) => {
-      if (controlObject[index]) {
-        controlObject[index].isRendered.value = newValue;
+      if (controlComponent[index]) {
+        const isRender = (controlComponent[index] as any)[this.renderExtInfo.isRenderedName] as Ref<boolean>;
+        isRender.value = newValue;
       }
     };
 
@@ -80,9 +63,19 @@ export class MultiSelectConfig extends BC<string[], boolean, true> {
   }
 }
 
-export class TextInputConfig extends BC<string, string, false> {
-  constructor(label: string, value: Ref<string>, title?: string, disabled?: boolean) {
-    super(label, value, title, undefined, disabled);
+export interface TextInputExtOpt {
+  disable?: boolean;
+}
+
+export class TextInputComponent extends dyComponent<string, string, false, TextInputExtOpt> {
+  constructor(
+    label: string,
+    value: Ref<string>,
+    renderExtInfo: rendererHelper,
+    title?: string,
+    extraOptions?: TextInputExtOpt
+  ) {
+    super(label, value, renderExtInfo, title, undefined, extraOptions);
   }
 
   render(depth: number, isRender: Ref<boolean>): DefineComponent {
@@ -90,7 +83,7 @@ export class TextInputConfig extends BC<string, string, false> {
     const label = this.label;
     const value = this.value as Ref<string>;
     const title = this.title;
-    const disable = this.disabled;
+    const disable = this.extraOptions?.disable;
 
     return defineComponent({
       setup() {
@@ -109,9 +102,19 @@ export class TextInputConfig extends BC<string, string, false> {
   }
 }
 
-export class FileInputConfig extends BC<string, File[], false> {
-  constructor(label: string, value: Ref<File[]>, title?: string, disabled?: boolean) {
-    super(label, value, title, undefined, disabled);
+export interface FileInputExtOpt {
+  disable?: boolean;
+}
+
+export class FileInputComponent extends dyComponent<string, File[], false, FileInputExtOpt> {
+  constructor(
+    label: string,
+    value: Ref<File[]>,
+    renderExtInfo: rendererHelper,
+    title?: string,
+    extraOptions?: FileInputExtOpt
+  ) {
+    super(label, value, renderExtInfo, title, undefined, extraOptions);
   }
 
   render(depth: number, isRender: Ref<boolean>): DefineComponent {
@@ -119,7 +122,7 @@ export class FileInputConfig extends BC<string, File[], false> {
     const label = this.label;
     const files = this.value as Ref<File[]>;
     const title = this.title;
-    const disable = this.disabled;
+    const disable = this.extraOptions?.disable;
 
     return defineComponent({
       setup() {
@@ -151,28 +154,5 @@ export class FileInputConfig extends BC<string, File[], false> {
         );
       },
     });
-  }
-}
-
-export abstract class configBase {
-  configs: BC<unknown, unknown, boolean>[];
-  isRendered: Ref<boolean> = ref(true); // TODO: bug?
-
-  protected constructor() {
-    this.configs = [];
-  }
-
-  render(depth: number = 0, isRender: Ref<boolean> = ref(true)): DefineComponent[] {
-    const res: DefineComponent[] = [];
-    for (const config of this.configs) {
-      const component = config.render(depth, isRender);
-      res.push(component);
-      if (config.controlObject && Array.isArray(config.controlObject)) {
-        for (const c of config.controlObject) {
-          res.push(...(c as configBase).render(depth++, c.isRendered));
-        }
-      }
-    }
-    return res;
   }
 }

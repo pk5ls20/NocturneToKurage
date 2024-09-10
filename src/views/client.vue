@@ -61,8 +61,8 @@ const handleSettingsClick = (id: number) => {
 };
 
 const render = (idx: number) => {
-  const kc = toRaw(ClientManager.clients[idx]);
-  return kc.kazeClient.render();
+  const kc = toRaw(ClientManager.clients[idx]); // must be raw object, cannot be proxy object, why?
+  return kc.kazeClient.configRender();
 };
 
 watchEffect(() => {

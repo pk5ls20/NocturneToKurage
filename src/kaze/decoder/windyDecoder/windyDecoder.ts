@@ -1,19 +1,35 @@
 import * as protobuf from 'protobufjs';
-import { Ref, ref, watch } from 'vue';
+import { DefineComponent, Ref, ref, watch } from 'vue';
 import { DecodeResult, protobufDecoder } from '@/kaze/decoder/decoder';
-import { FileInputConfig } from '@/kaze/config/config';
+import { FileInputComponent } from '@/components/dynamic/basicComponents';
+import { dyComponent, rendererComponents, rendererHelper, rendererType } from '@/components/dynamic/dyComponent';
+import { Buffer } from 'buffer';
 
 type protoFileMap = Map<string, string>;
 
-export class windyDecoder<SM extends boolean = true> extends protobufDecoder<SM, string, string, protobuf.Message<{}>> {
+@rendererComponents(['config'])
+export class windyDecoder<SM extends boolean = true>
+  extends protobufDecoder<SM, string, string, protobuf.Message<{}>>
+  implements rendererType<['config']>
+{
   private readonly protoFileMap: protoFileMap;
   private readonly fileRef: Ref<File[]>;
+
+  configComponents!: dyComponent<unknown, unknown, boolean, unknown>[];
+  configRender!: (depth?: number, isRender?: Ref<boolean>) => DefineComponent[];
+  _rd_config!: rendererHelper;
+  isconfigRendered!: Ref<boolean>;
 
   constructor(simpleMode: SM, protoFileMap?: protoFileMap) {
     super(simpleMode);
     this.fileRef = ref([]);
     this.protoFileMap = protoFileMap ?? new Map<string, string>();
-    this.configs = [new FileInputConfig('Upload Protobuf files...', this.fileRef, 'Protobuf files')];
+    this._rd_config = this._rd_config || this.constructor.prototype._rd_config;
+    this.configRender = this.configRender || this.constructor.prototype.configRender;
+    this.isconfigRendered = this.isconfigRendered || this.constructor.prototype.isconfigRendered;
+    this.configComponents = [
+      new FileInputComponent('Upload Protobuf files...', this.fileRef, this._rd_config, 'Protobuf files'),
+    ];
 
     watch(this.fileRef, async (newFiles, oldFiles) => {
       for (const file of newFiles) {

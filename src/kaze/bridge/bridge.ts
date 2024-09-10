@@ -1,8 +1,8 @@
 import { protobufDecoder, ProtoTree } from '@/kaze/decoder/decoder';
 import { Buffer } from 'buffer';
-import { configBase } from '@/kaze/config/config';
+import { dyComponentsTreeBase } from '@/components/dynamic/dyComponent';
 
-export abstract class dataBridge<PTK extends string | number | symbol, PTV, EDT> extends configBase {
+export abstract class dataBridge<PTK extends string | number | symbol, PTV, EDT> extends dyComponentsTreeBase {
   protected constructor() {
     super();
   }

@@ -1,6 +1,6 @@
-import { configBase } from '@/kaze/config/config';
+import { dyComponentsTreeBase } from '@/components/dynamic/dyComponent';
 
-export class kazeContainer<K, V extends configBase> {
+export class kazeContainer<K, V extends dyComponentsTreeBase> {
   private items: Map<K, V>;
 
   constructor(items: Map<K, V>) {

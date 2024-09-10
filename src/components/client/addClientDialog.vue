@@ -24,12 +24,12 @@ import { client } from '@/client/client';
 
 const store = useMainPageStore();
 let kc = new kazeClient();
-const kcr = shallowRef(kc.render());
+const kcr = shallowRef(kc.configRender());
 
 const handleClickSave = () => {
   store.isAddClientDialogShow = false;
   ClientManager.addClient(new client(kc));
   kc = new kazeClient();
-  kcr.value = kc.render();
+  kcr.value = kc.configRender();
 };
 </script>
