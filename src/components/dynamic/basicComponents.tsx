@@ -104,6 +104,7 @@ export class TextInputComponent extends dyComponent<string, string, false, TextI
 
 export interface FileInputExtOpt {
   disable?: boolean;
+  accept?: string;
 }
 
 export class FileInputComponent extends dyComponent<string, File[], false, FileInputExtOpt> {
@@ -123,6 +124,7 @@ export class FileInputComponent extends dyComponent<string, File[], false, FileI
     const files = this.value as Ref<File[]>;
     const title = this.title;
     const disable = this.extraOptions?.disable;
+    const accept = this.extraOptions?.accept;
 
     return defineComponent({
       setup() {
@@ -138,6 +140,7 @@ export class FileInputComponent extends dyComponent<string, File[], false, FileI
                   clearable={false}
                   multiple
                   disabled={disable}
+                  {...{ accept: accept }}
                 >
                   {{
                     selection: ({ fileNames }: { fileNames: string[] }) =>

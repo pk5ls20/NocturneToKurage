@@ -28,7 +28,9 @@ export class windyDecoder<SM extends boolean = true>
     this.configRender = this.configRender || this.constructor.prototype.configRender;
     this.isconfigRendered = this.isconfigRendered || this.constructor.prototype.isconfigRendered;
     this.configComponents = [
-      new FileInputComponent('Upload Protobuf files...', this.fileRef, this._rd_config, 'Protobuf files'),
+      new FileInputComponent('Upload Protobuf files...', this.fileRef, this._rd_config, 'Protobuf files', {
+        accept: '.proto, .txt',
+      }),
     ];
 
     watch(this.fileRef, async (newFiles, oldFiles) => {
