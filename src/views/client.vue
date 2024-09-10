@@ -17,6 +17,7 @@
           :decoder-name="client.decoderName"
           :recv-pkt-num="client.recvPktNum"
           :send-pkt-num="client.sendPktNum"
+          :status="client.status"
           :id="index"
           @open-settings="handleSettingsClick(index)"
         ></client-card>
@@ -49,7 +50,7 @@ import { clientInfo } from '@/client/client';
 import { ClientManager } from '@/client/clientManager';
 
 const store = useMainPageStore();
-const clientInfoList = ref<clientInfo[]>([]);
+const clientInfoList = ref<clientInfo<false>[]>([]);
 
 const handleAddClientClick = () => {
   store.isAddClientDialogShow = true;

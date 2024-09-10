@@ -30,7 +30,7 @@ export class MultiSelectComponent extends dyComponent<string[], boolean, true, M
 
     const updateIsRendered = (index: number, newValue: boolean) => {
       if ((controlComponent[index] as any)[this.renderExtInfo.isRenderedName]) {
-        const isRender = (controlComponent[index] as any).isRendered as Ref<boolean>;
+        const isRender = (controlComponent[index] as any)[this.renderExtInfo.isRenderedName] as Ref<boolean>;
         isRender.value = newValue;
       } else {
         console.warn("controlComponent don't have renderExtInfo based isRendered property", this);

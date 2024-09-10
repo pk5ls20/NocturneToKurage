@@ -4,7 +4,14 @@
       <v-row align="center">
         <v-col>
           <div class="text-h6 mb-4">
-            <v-icon color="success" icon="md:check_circle" size="small" class="mr-2"></v-icon>
+            <v-icon
+              v-if="status === 'connected'"
+              color="success"
+              icon="md:check_circle"
+              size="small"
+              class="mr-2"
+            ></v-icon>
+            <v-icon v-else color="error" icon="md:cancel" size="small" class="mr-2"></v-icon>
             {{ clientName }}
           </div>
         </v-col>
@@ -36,7 +43,7 @@
 <script setup lang="ts">
 import { clientInfo } from '@/client/client';
 
-interface extClientInfo extends clientInfo {
+interface extClientInfo extends clientInfo<false> {
   id: number;
 }
 

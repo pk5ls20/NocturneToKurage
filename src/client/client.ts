@@ -1,31 +1,39 @@
 import { kazeClient } from '@/kaze/client/kazeClient';
+import { Ref, ref } from 'vue';
 
-export interface clientInfo {
-  clientName: string;
-  sendPktNum: number;
-  recvPktNum: number;
-  address: string;
-  bridgeName: string;
-  decoderName: string;
+type MaybeRef<T, C> = C extends true ? Ref<T> : T;
+
+export interface clientInfo<RT> {
+  status: MaybeRef<connectionStatus, RT>;
+  clientName: MaybeRef<string, RT>;
+  sendPktNum: MaybeRef<number, RT>;
+  recvPktNum: MaybeRef<number, RT>;
+  address: MaybeRef<string, RT>;
+  bridgeName: MaybeRef<string, RT>;
+  decoderName: MaybeRef<string, RT>;
 }
+
+export type connectionStatus = 'connected' | 'disconnected';
 
 export class client {
   kazeClient: kazeClient;
-  private sendPkt = 0;
-  private recvPkt = 0;
+  private status: Ref<connectionStatus> = ref('disconnected');
+  private sendPkt = ref(0);
+  private recvPkt = ref(0);
 
   constructor(kc: kazeClient) {
     this.kazeClient = kc;
   }
 
-  get info(): clientInfo {
+  get info(): clientInfo<true> {
     return {
-      clientName: this.kazeClient.clientName as unknown as string,
+      status: this.status,
+      clientName: this.kazeClient.clientName,
       sendPktNum: this.sendPkt,
       recvPktNum: this.recvPkt,
-      address: this.kazeClient.clientAddress as unknown as string,
-      bridgeName: this.kazeClient.bridge.keys().join(', '),
-      decoderName: this.kazeClient.decoder.keys().join(', '),
+      address: this.kazeClient.clientAddress,
+      bridgeName: ref(this.kazeClient.bridge.keys().join(', ')),
+      decoderName: ref(this.kazeClient.decoder.keys().join(', ')),
     };
   }
 }
